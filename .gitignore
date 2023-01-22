@@ -1,3 +1,4 @@
 #.gitignore
 .env
-data_writing.sql
+clean.sql
+temp.py

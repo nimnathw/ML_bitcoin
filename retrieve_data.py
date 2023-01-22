@@ -8,8 +8,8 @@ import pandas as pd
 import pandas_datareader as pdr
 import os
 from dotenv import load_dotenv
-load_dotenv()
 
+load_dotenv()
 user=os.environ.get("MYSQL_USER")
 password=os.environ.get("MYSQL_PASSWORD")
 host=os.environ.get("MYSQL_HOST")
@@ -62,12 +62,16 @@ def retrieve_fred(fred_codes, start, end):
     
     try:
         for code in fred_codes:
-            df = pdr.get_data_fred(code, start=start, end=end)
+            df = pdr.get_data_fred(code, start=start, end=end)   
+            print(df.dtypes)
             df.to_sql(code, engine, if_exists='replace')
+            print(df.head(5))
         print(f'Successfully retrieved data for codes: {fred_codes}')
     except Exception as e:
         print(f'Error retrieving data for codes: {fred_codes}')
         print(e)
+    finally:
+        engine.dispose()
 
 def retrieve_coingecko(coingecko_codes):
     """
@@ -92,12 +96,17 @@ def retrieve_coingecko(coingecko_codes):
 
             # Convert the 'date' column to datetime format
             df['date'] = pd.to_datetime(df['date'], unit='ms')
+            df["date"] = pd.to_datetime(df["date"])
+            df = df.set_index("date")
+
+            print(df.head(5))
 
             # Create table with the same name as code in the database
             df.to_sql(code, engine, if_exists='replace')
     except Exception as e:
         print("Error occurred while retrieving data from CoinGecko: ", e)
-
+    finally:
+        engine.dispose()
 
 # retrieve data from fred
 retrieve_fred(fred_codes, two_years_ago, current_date)
