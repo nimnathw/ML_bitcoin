@@ -49,9 +49,7 @@ def clean_data():
         # Count number of observations out of 1.5* IQR
         num_outliers = outliers.shape[0]
 
-        print(f"No. outlier values in table {table_name} is: {num_outliers} \n")
-
-        
+        print(f"No. outlier values in table {table_name} is: {num_outliers} \n")     
 
 if __name__ == "__main__":
     clean_data()
