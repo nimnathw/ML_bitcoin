@@ -41,7 +41,7 @@ two_years_ago = current_date - timedelta(days=365*2)
 #PCUADLVWRADLVWR: Producer Price Index by Industry: Delivery and Warehouse Industries
 #NEWORDER:Manufacturers' New Orders: Nondefense Capital Goods Excluding Aircraft
 #AMTUNO: Manufacturers' New Orders: Manufacturing with Unfilled Orders
-fred_codes = ["IOER", "NASDAQ100", "DGS3MO", "DGS1MO", "DGS6MO", "DGS5", "DGS10",
+fred_codes = ["NASDAQ100", "DGS3MO", "DGS1MO", "DGS6MO", "DGS5", "DGS10",
          "AWHMAN", "PERMIT", "SP500", "T10YFF", "IC4WSA", "ACDGNO", "RETAILIMSA", 
          "UMCSENT", "M2SL", "PCUADLVWRADLVWR"]
 
@@ -63,9 +63,15 @@ def retrieve_fred(fred_codes, start, end):
     try:
         for code in fred_codes:
             df = pdr.get_data_fred(code, start=start, end=end)   
-            print(df.dtypes)
+            
+            # de-index df
+            df = df.reset_index()
+            df.rename(columns={df.columns[0]: "date"}, inplace=True)
+            
+            # Convert the 'date' column to datetime format
+            df = df.set_index("date")
             df.to_sql(code, engine, if_exists='replace')
-            print(df.head(5))
+            
         print(f'Successfully retrieved data for codes: {fred_codes}')
     except Exception as e:
         print(f'Error retrieving data for codes: {fred_codes}')
@@ -96,13 +102,12 @@ def retrieve_coingecko(coingecko_codes):
 
             # Convert the 'date' column to datetime format
             df['date'] = pd.to_datetime(df['date'], unit='ms')
-            df["date"] = pd.to_datetime(df["date"])
             df = df.set_index("date")
-
-            print(df.head(5))
-
+            
             # Create table with the same name as code in the database
             df.to_sql(code, engine, if_exists='replace')
+            
+        print(f'Successfully retrieved data for codes: {coingecko_codes}')
     except Exception as e:
         print("Error occurred while retrieving data from CoinGecko: ", e)
     finally:
