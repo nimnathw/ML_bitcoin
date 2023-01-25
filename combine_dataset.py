@@ -53,6 +53,8 @@ def combine_data():
     merged_df = merged_df.dropna()
     
     print(merged_df.head())
+    merged_df.to_csv('data.csv', date_format='%Y-%m-%d', index=True)
+
         
 if __name__ == "__main__":
     combine_data()
