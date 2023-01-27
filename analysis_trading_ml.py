@@ -7,20 +7,24 @@ Original file is located at
     https://colab.research.google.com/drive/1exZQwZvPofP4SLF4-r93am29lMQmFVTa
 """
 
-import sys
-import os
-os.chdir('/content/drive/MyDrive/Colab Notebooks')
-sys.path.append('/content/drive/MyDrive/Colab Notebooks')
-!pwd
+#import sys
+#import os
+#os.chdir('/content/drive/MyDrive/Colab Notebooks')
+#sys.path.append('/content/drive/MyDrive/Colab Notebooks')
+#pwd
 
-from google.colab import files
-#uploaded = files.upload()
+#from google.colab import files
+#uploaded = files.upload()"""
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from keras.models import Sequential
+from keras.models import load_model
+from keras.layers import LSTM, Dense
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 # Load the cleaned data into a DataFrame
 df = pd.read_csv("data.csv")
@@ -54,15 +58,10 @@ for train_index, test_index in tscv.split(df):
 # Split the data into training and test sets
 # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-
 scaler = StandardScaler()
 scaler.fit(X_train)
 X_train = scaler.transform(X_train)
 X_test = scaler.transform(X_test)
-
-from keras.models import Sequential
-from keras.layers import LSTM, Dense
-from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 # Define the LSTM model
 model = Sequential()
@@ -80,8 +79,6 @@ checkpoint = ModelCheckpoint("best_model.h5", save_best_only=True, monitor='val_
 
 # Train the model on the training data
 history = model.fit(X_train, y_train, validation_split=0.2, epochs=100, batch_size=32, callbacks=[early_stopping, checkpoint])
-
-from keras.models import load_model
 
 # Load the best model
 model = load_model('best_model.h5')
@@ -121,12 +118,11 @@ print('Variance of y_test_transformed:', y_test_transformed_var)
 rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 print(f"rmse: {rmse}")
 
-!pip install pmdarima
 
+# Try Arima model
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.model_selection import train_test_split
 import pandas as pd
-from pmdarima.arima import auto_arima
 
 df = pd.read_csv("data.csv")
 X = df.drop("prices", axis=1) # drop prices column to create X
@@ -137,17 +133,17 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 
 
 
-#stepwise_model = auto_arima(y_train, start_p=1, start_q=1,
-                           max_p=3, max_q=3, m=12,
-                           start_P=0, seasonal=True,
-                           d=1, D=1, trace=True,
-                           error_action='ignore',  
-                           suppress_warnings=True, 
-                           stepwise=True)
+stepwise_model = auto_arima(y_train, start_p=1, start_q=1,
+                    max_p=3, max_q=3, m=12,
+                    start_P=0, seasonal=True,
+                    d=1, D=1, trace=True,
+                    error_action='ignore',  
+                    suppress_warnings=True, 
+                    stepwise=True)
 
-#print(stepwise_model.order)
+print(stepwise_model.order)
 
 # Fit an ARIMA model to the time series data
+(p, d, q) = (2, 1, 3)
 model = ARIMA(y_train, order=(p, d, q))
 model_fit = model.fit()
-
